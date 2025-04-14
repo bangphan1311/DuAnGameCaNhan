@@ -1,0 +1,9 @@
+#define WINDOW_TITLE "My Game"
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+#define WINDOW_TITLE "SHIN RUN"
+#define GROUND_Y 405
+#define GRAVITY 1
+#define JUMP_STRENGTH -22
+
+
