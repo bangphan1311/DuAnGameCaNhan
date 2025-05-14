@@ -23,4 +23,5 @@ struct Graphics {
     void quit();
 };
 
+
 #endif

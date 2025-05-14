@@ -1,8 +1,9 @@
 #include "Obstacle.h"
 #include "Mouse.h"
 
-Obstacle::Obstacle(SDL_Texture* tex, int startX, int startY, int w, int h)
-    : texture(tex), x(startX), y(startY), width(w), height(h) {}
+Obstacle::Obstacle(SDL_Texture* tex, int startX, int startY, int w, int h, int obstacleType)
+    : texture(tex), x(startX), y(startY), width(w), height(h), type(obstacleType) {}
+
 
 void Obstacle::update(float speed) {
     x -= static_cast<int>(speed);

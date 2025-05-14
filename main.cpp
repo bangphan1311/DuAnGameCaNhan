@@ -11,183 +11,237 @@
 #include "GameRender.h"
 #include "GameDefines.h"
 
+///trang thai
+enum GameState {
+    STATE_START_SCREEN,
+    STATE_PLAYING,
+    STATE_GAME_OVER
+};
+
 int main(int argc, char* argv[]) {
     Graphics gfx;
     gfx.init();
+
     if (TTF_Init() == -1) {
         SDL_Log("Failed to initialize SDL_ttf: %s", TTF_GetError());
     }
 
-    TTF_Font* font = TTF_OpenFont("ARIBL0.ttf", 40); // bạn cần một file font TTF
-    if (!font) {
-        SDL_Log("Failed to load font: %s", TTF_GetError());
-    }
+    TTF_Font* font = TTF_OpenFont("ARIBL0.ttf", 40);
 
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        SDL_Log("SDL_mixer could not initialize! SDL_mixer Error: %s", Mix_GetError());
-        return -1;
-    }
 
-    ///am thanh
+
     Mix_Music* bgm = Mix_LoadMUS("energetic-chiptune-video-game-music-platformer-8-bit-318348.mp3");
-    if (!bgm) {
-        SDL_Log("Failed to load background music! SDL_mixer Error: %s", Mix_GetError());
-        return -1;
-    }
-
-    Mix_PlayMusic(bgm, -1);
-
     Mix_Music* gameOverMusic = Mix_LoadMUS("hieu_ung_am_thanh_mat_mang-www_tiengdong_com.mp3");
-    if (!gameOverMusic) {
-        SDL_Log("Failed to load game over music! SDL_mixer Error: %s", Mix_GetError());
-        return -1;
-    }
-
     Mix_Chunk* jumpSound = Mix_LoadWAV("hieu_ung_am_thanh_nhay_qua_buoc_qua-www_tiengdong_com (mp3cut.net).mp3");
-    if (!jumpSound) {
-        SDL_Log("Failed to load jump sound! SDL_mixer Error: %s", Mix_GetError());
-        return -1;
-    }
 
-    ///chuong ngai vat
+
+/// add hinh anh
     SDL_Texture* obstacleTex1 = gfx.loadTexture("bt-removebg-preview.png");
     SDL_Texture* obstacleTex2 = gfx.loadTexture("rắn-removebg-preview.png");
     SDL_Texture* obstacleTex3 = gfx.loadTexture("gầ-removebg-preview.png");
 
-    std::vector<Obstacle> obstacles;
-    obstacles.push_back(Obstacle(obstacleTex1, 500, GROUND_Y + 5, 70, 70));
-    obstacles.push_back(Obstacle(obstacleTex2, 1000, GROUND_Y - 10, 80, 85));
-    obstacles.push_back(Obstacle(obstacleTex3, 2500, GROUND_Y - 8, 80, 80));
+    SDL_Texture* obstacleTex1Night = gfx.loadTexture("mandem2-removebg-preview.png");
+    SDL_Texture* obstacleTex2Night = gfx.loadTexture("mandem3-removebg-preview.png");
+    SDL_Texture* obstacleTex3Night = gfx.loadTexture("mandem1-removebg-preview.png");
 
+    SDL_Texture* obstacleTex1Winter = gfx.loadTexture("result_w22.png");
+    SDL_Texture* obstacleTex2Winter = gfx.loadTexture("winter1.png");
+    SDL_Texture* obstacleTex3Winter = gfx.loadTexture("w3.png");
     SDL_Texture* mouseTexture = gfx.loadTexture("shin.png");
-    Mouse mouse(mouseTexture, 67, 76, 6, 100, GROUND_Y-45, jumpSound);
+    SDL_Texture* mouseTextureNight = gfx.loadTexture("shintoi.png");
+    SDL_Texture* mouseTextureWinter = gfx.loadTexture("muadong.png");
 
     SDL_Texture* background = gfx.loadTexture("bground.jpg");
-    SDL_Texture* gameOverTexture = gfx.loadTexture("ảnh (2).jpg");
+    SDL_Texture* backgroundNight = gfx.loadTexture("dem.jpg");
+    SDL_Texture* backgroundWinter = gfx.loadTexture("donggg.jpg");
 
-    ///diem
+    SDL_Texture* gameOverTexture = gfx.loadTexture("0veer.png");
+    /// man hinh start
+    SDL_Texture* startScreenTexture = gfx.loadTexture("startttt.png");
+
+    std::vector<Obstacle> obstacles;
+    obstacles.push_back(Obstacle(obstacleTex1, 500, GROUND_Y + 5, 70, 70, 1));
+    obstacles.push_back(Obstacle(obstacleTex2, 1000, GROUND_Y - 10, 80, 85, 2));
+    obstacles.push_back(Obstacle(obstacleTex3, 2500, GROUND_Y - 8, 80, 80, 3));
+
+    Mouse mouse(mouseTexture, 67, 76, 6, 100, GROUND_Y - 45, jumpSound);
+
     int score = 0;
     Uint32 lastScoreTime = SDL_GetTicks();
-
     SDL_Color textColor = {255, 255, 255};
-
     SDL_Texture* scoreTexture = nullptr;
     SDL_Rect scoreRect;
 
     bool running = true;
     bool gameOver = false;
+    bool nightModeActivated = false;
+    bool winterModeActivated = false;
+    SDL_Texture* currentBackground = background;
+    SDL_Texture* currentMouseTexture = mouseTexture;
+    std::vector<SDL_Texture*> currentObstacleTextures = {obstacleTex1, obstacleTex2, obstacleTex3};
+
     int bgX = 0;
-    float currentSpeed = 5.0f;
+    float currentSpeed = 6.0f;
     Uint32 lastSpeedIncrease = SDL_GetTicks();
+
+    ///bat dau
+    GameState gameState = STATE_START_SCREEN;
+
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = false;
+            if (event.type == SDL_QUIT) running = false;
+
+            ///man hinh start
+            if (gameState == STATE_START_SCREEN && event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_s) {
+                    gameState = STATE_PLAYING;
+                    Mix_PlayMusic(bgm, -1); ///chay nhac
+                }
+            } else if (gameState == STATE_PLAYING && event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_SPACE)
+                    mouse.jump();
             }
-            if (!gameOver && event.type == SDL_KEYDOWN) {
-                switch (event.key.keysym.sym) {
-                    case SDLK_SPACE:
-                    case SDLK_UP:
-                        mouse.jump();
-                        break;
+///game over va replay , khoi phuc su vat
+            if (gameState == STATE_GAME_OVER && event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_r) {
+                gameState = STATE_PLAYING;
+                gameOver = false;
+                score = 0;
+                currentSpeed = 5.0f;
+                bgX = 0;
+                nightModeActivated = false;
+                winterModeActivated = false;
+                lastScoreTime = SDL_GetTicks();
+                lastSpeedIncrease = SDL_GetTicks();
+
+                Mix_HaltMusic();
+                Mix_PlayMusic(bgm, -1);
+
+                mouse.reset();
+                mouse.texture = mouseTexture;
+                currentMouseTexture = mouseTexture;
+                currentBackground = background;
+                obstacles.clear();
+                obstacles.push_back(Obstacle(obstacleTex1, 500, GROUND_Y + 5, 70, 70, 1));
+                obstacles.push_back(Obstacle(obstacleTex2, 1000, GROUND_Y - 10, 80, 85, 2));
+                obstacles.push_back(Obstacle(obstacleTex3, 2500, GROUND_Y - 8, 80, 80, 3));
+                currentObstacleTextures = {obstacleTex1, obstacleTex2, obstacleTex3};
+///hien thi diem khi thua
+                if (scoreTexture) {
+                    SDL_DestroyTexture(scoreTexture);
+                    scoreTexture = nullptr;
                 }
             }
         }
 
-        if (!gameOver) {
+        gfx.prepareScene();
+
+       /// hien thi man hinh start
+        if (gameState == STATE_START_SCREEN) {
+            SDL_RenderCopy(gfx.renderer, startScreenTexture, NULL, NULL);
+        } else if (gameState == STATE_PLAYING) {
+            gfx.renderScrollingBackground(currentBackground, bgX);
+
             mouse.update();
-            for (auto& obstacle : obstacles) {
-                obstacle.update(currentSpeed);
-                if (checkCollision(mouse, obstacle)) {
-                    SDL_Log("Game Over!");
-                    gameOver = true;
+            mouse.texture = currentMouseTexture;/// cap nhat shin
+            for (size_t i = 0; i < obstacles.size(); ++i) {
+                obstacles[i].update(currentSpeed);
+                obstacles[i].texture = currentObstacleTextures[i]; /// cap nhat chuowng ngai vat
+                if (checkCollision(mouse, obstacles[i])) {
+                    gameState = STATE_GAME_OVER;
                     Mix_HaltMusic();
                     Mix_PlayMusic(gameOverMusic, -1);
                 }
             }
-
-            ///tang toc do
-            if (SDL_GetTicks() - lastSpeedIncrease > 10000) {
-                currentSpeed += 0.5f;
-                if (currentSpeed > 15.0f) currentSpeed = 15.0f;
+///tang toc moi 5s
+            if (SDL_GetTicks() - lastSpeedIncrease > 5000) {
+                currentSpeed = std::min(currentSpeed + 0.5f, 15.0f);
                 lastSpeedIncrease = SDL_GetTicks();
             }
 
-            if (!gameOver) {
-                bgX -= (int)currentSpeed;
-                if (bgX <= -SCREEN_WIDTH) {
-                    bgX = 0;
+            bgX -= (int)currentSpeed;
+            if (bgX <= -SCREEN_WIDTH) bgX = 0;
+
+            if (SDL_GetTicks() - lastScoreTime > 500) {
+                score++;///diem tang them moi nua giay
+                lastScoreTime = SDL_GetTicks();
+                std::string scoreText = "SCORE: " + std::to_string(score);///HIEN THI DIEM
+                SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText.c_str(), textColor);
+                ///ban ngay
+                if (textSurface) {
+                    if (scoreTexture) SDL_DestroyTexture(scoreTexture);
+                    scoreTexture = SDL_CreateTextureFromSurface(gfx.renderer, textSurface);
+                    scoreRect = {SCREEN_WIDTH - textSurface->w - 20, 20, textSurface->w, textSurface->h};
+                    SDL_FreeSurface(textSurface);
+                }
+                ///ban dem
+
+                if (score >= 10 && !nightModeActivated && !winterModeActivated) {
+                    currentBackground = backgroundNight;
+                    currentMouseTexture = mouseTextureNight;
+                    currentObstacleTextures = {obstacleTex1Night, obstacleTex2Night, obstacleTex3Night};
+                    nightModeActivated = true;
+                }
+                ///mua dong
+
+                if (score >= 15 && !winterModeActivated) {
+                    currentBackground = backgroundWinter;
+                    currentMouseTexture = mouseTextureWinter;
+                    currentObstacleTextures = {obstacleTex1Winter, obstacleTex2Winter, obstacleTex3Winter};
+                    winterModeActivated = true;
+                    nightModeActivated = false;
                 }
             }
-        }
 
-        if (!gameOver && SDL_GetTicks() - lastScoreTime > 500) {
-            score++;
-            lastScoreTime = SDL_GetTicks();
-
-           ///tao score
-            std::string scoreText = "Score: " + std::to_string(score);
-            SDL_Log("Score Text: %s", scoreText.c_str());
-
+            for (const auto& obstacle : obstacles) obstacle.render(gfx);
+            render(mouse, gfx);
+            if (scoreTexture) SDL_RenderCopy(gfx.renderer, scoreTexture, NULL, &scoreRect);
+        } else if (gameState == STATE_GAME_OVER) {
+            SDL_RenderCopy(gfx.renderer, gameOverTexture, NULL, NULL);
+            std::string scoreText = "Score: " + std::to_string(score);///score game over
             SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText.c_str(), textColor);
+            ///ve gameover
             if (textSurface) {
-                if (scoreTexture) SDL_DestroyTexture(scoreTexture); // xoá texture cũ
-                scoreTexture = SDL_CreateTextureFromSurface(gfx.renderer, textSurface);
-                scoreRect = { SCREEN_WIDTH - textSurface->w - 20, 20, textSurface->w, textSurface->h };
+                SDL_Texture* gameOverScoreTexture = SDL_CreateTextureFromSurface(gfx.renderer, textSurface);
+                SDL_Rect rect = {(SCREEN_WIDTH - textSurface->w) / 2, SCREEN_HEIGHT / 2 - 60, textSurface->w, textSurface->h};
+                SDL_RenderCopy(gfx.renderer, gameOverScoreTexture, NULL, &rect);
+
                 SDL_FreeSurface(textSurface);
+                SDL_DestroyTexture(gameOverScoreTexture);
             }
         }
-
-        ///ve nen
-        // Vẽ màn hình
-gfx.prepareScene();
-gfx.renderScrollingBackground(background, bgX);
-
-if (gameOver) {
-
-    SDL_Rect dest = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-    SDL_RenderCopy(gfx.renderer, gameOverTexture, NULL, &dest);
-
-    /// diem khi thua
-    std::string scoreText = "Score: " + std::to_string(score);
-    SDL_Log("Score Text: %s", scoreText.c_str());
-
-    // Tạo surface rồi chuyển sang texture
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText.c_str(), textColor);
-    if (textSurface) {
-        SDL_Texture* gameOverScoreTexture = SDL_CreateTextureFromSurface(gfx.renderer, textSurface);
-       ///diem giua man hinh
-        SDL_Rect gameOverScoreRect = { (SCREEN_WIDTH - textSurface->w) / 2, SCREEN_HEIGHT / 2-60, textSurface->w, textSurface->h };
-        SDL_RenderCopy(gfx.renderer, gameOverScoreTexture, NULL, &gameOverScoreRect);
-
-        SDL_FreeSurface(textSurface);
-        SDL_DestroyTexture(gameOverScoreTexture);
-    }
-} else {
-    for (const auto& obstacle : obstacles) {
-        obstacle.render(gfx);
-    }
-    render(mouse, gfx);
-    if (scoreTexture) {
-        SDL_RenderCopy(gfx.renderer, scoreTexture, NULL, &scoreRect);
-    }
-}
-
 
         gfx.presentScene();
         SDL_Delay(16);
     }
 
-    /// don dep
     Mix_FreeMusic(bgm);
     Mix_FreeMusic(gameOverMusic);
     Mix_FreeChunk(jumpSound);
     Mix_CloseAudio();
+
     if (scoreTexture) SDL_DestroyTexture(scoreTexture);
+    if (startScreenTexture) SDL_DestroyTexture(startScreenTexture);///xoa cai man hinh start
+    ///giai phong bo nho
+    SDL_DestroyTexture(backgroundWinter);
+    SDL_DestroyTexture(obstacleTex1Winter);
+    SDL_DestroyTexture(obstacleTex2Winter);
+    SDL_DestroyTexture(obstacleTex3Winter);
+    SDL_DestroyTexture(mouseTextureWinter);
+    SDL_DestroyTexture(backgroundNight);
+    SDL_DestroyTexture(obstacleTex1Night);
+    SDL_DestroyTexture(obstacleTex2Night);
+    SDL_DestroyTexture(obstacleTex3Night);
+    SDL_DestroyTexture(background);
+    SDL_DestroyTexture(obstacleTex1);
+    SDL_DestroyTexture(obstacleTex2);
+    SDL_DestroyTexture(obstacleTex3);
+    SDL_DestroyTexture(mouseTexture);
+    SDL_DestroyTexture(mouseTextureNight);
+    SDL_DestroyTexture(gameOverTexture);
     TTF_CloseFont(font);
     TTF_Quit();
-
     gfx.quit();
+
     return 0;
 }

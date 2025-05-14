@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1744606224 source:c:\laptrinhc++\lamlai\main.cpp
+1746598382 source:c:\laptrinhc++\lamlai\main.cpp
 	<SDL.h>
 	<vector>
 	"graphics.h"
@@ -12,7 +12,7 @@
 	"GameRender.h"
 	"GameDefines.h"
 
-1744564893 c:\laptrinhc++\lamlai\graphics.h
+1745393454 c:\laptrinhc++\lamlai\graphics.h
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_mixer.h>
@@ -24,12 +24,12 @@
 
 1744600868 c:\laptrinhc++\lamlai\game.h
 
-1744605527 source:c:\laptrinhc++\lamlai\mouse.cpp
+1746542896 source:c:\laptrinhc++\lamlai\mouse.cpp
 	"Mouse.h"
 	<SDL_log.h>
 	"defs.h"
 
-1744605527 c:\laptrinhc++\lamlai\mouse.h
+1746544023 c:\laptrinhc++\lamlai\mouse.h
 	<SDL.h>
 	<SDL_mixer.h>
 	"GameDefines.h"
@@ -43,15 +43,15 @@
 	"Mouse.h"
 	"graphics.h"
 
-1744605527 c:\laptrinhc++\lamlai\obstacle.h
+1746544053 c:\laptrinhc++\lamlai\obstacle.h
 	<SDL.h>
 	"graphics.h"
 	"GameDefines.h"
 
-1744605527 source:c:\laptrinhc++\lamlai\obstacle.cpp
+1746526130 source:c:\laptrinhc++\lamlai\obstacle.cpp
 	"Obstacle.h"
 	"Mouse.h"
 
-1744605527 source:c:\laptrinhc++\lamlai\graphic.cpp
+1746543423 source:c:\laptrinhc++\lamlai\graphic.cpp
 	"Graphics.h"
 

@@ -17,7 +17,9 @@ struct Mouse {
     Mix_Chunk* jumpSound;
 
     Mouse(SDL_Texture* tex, int fw, int fh, int total, int startX, int startY, Mix_Chunk* jumpSfx);
+
     void init();
+    void reset();
     void jump();
     void applyGravity();
     void update();

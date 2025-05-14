@@ -10,9 +10,9 @@ Mouse::Mouse(SDL_Texture* tex, int fw, int fh, int total, int startX, int startY
       dy(0), isJumping(false),
       texture(tex), jumpSound(jumpSfx),startY(startY) {}
       void Mouse::init() {
-    y = GROUND_Y-45;  // Đảm bảo chuột bắt đầu từ mặt đất của chuột
-    dy = 0;              // Đảm bảo vận tốc ban đầu là 0
-    isJumping = false;   // Chuột không nhảy ngay từ đầu
+    y = GROUND_Y-45;
+    dy = 0;
+    isJumping = false;
 }
 
 void Mouse::jump() {
@@ -46,3 +46,12 @@ void Mouse::update() {
         }
     }
 }
+void Mouse::reset() {
+    x = 100;
+    y = startY;
+    dy = 0;
+    isJumping = false;
+    currentFrame = 0;
+    frameTimer = 0;
+}
+
